@@ -1,177 +1,180 @@
 // src/components/DecayVisualizer.tsx
 "use client";
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import React, { useState } from 'react';
+import { PlusCircle, MinusCircle, RotateCcw } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const timeUnits = [
-  { value: 's', label: 'Seconds' },
-  { value: 'm', label: 'Minutes' },
-  { value: 'h', label: 'Hours' },
-  { value: 'd', label: 'Days' },
-  { value: 'y', label: 'Years' },
-  { value: 'ky', label: 'Kiloyears' },
-  { value: 'My', label: 'Million years' },
+const UNIT_OPTIONS = [
+  { value: 'num', label: 'Number of atoms' },
+  { value: 'Bq', label: 'Becquerel (Bq)' },
+  { value: 'kBq', label: 'Kilobecquerel (kBq)' },
+  { value: 'Ci', label: 'Curie (Ci)' },
+  { value: 'g', label: 'Grams (g)' },
+  { value: 'kg', label: 'Kilograms (kg)' },
+  { value: 'mol', label: 'Moles (mol)' },
+  { value: 'kmol', label: 'Kilomoles (kmol)' }
 ];
 
-export default function DecayVisualizer() {
-  const [isotope, setIsotope] = useState('');
-  const [timeUnit, setTimeUnit] = useState('y');
-  const [timePeriod, setTimePeriod] = useState('100');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [decayChainImage, setDecayChainImage] = useState('');
-  const [evolutionImage, setEvolutionImage] = useState('');
+const DecayVisualizer = () => {
+  const [nuclides, setNuclides] = useState([{ isotope: '', quantity: '', unit: 'Bq' }]);
+  const [showChain, setShowChain] = useState(false);
+  const [showEvolution, setShowEvolution] = useState(false);
 
-  const fetchDecayChain = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await fetch('/api/decay-chain', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isotope })
-      });
-      
-      if (!response.ok) throw new Error('Invalid isotope');
-      const data = await response.json();
-      setDecayChainImage(data.image);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  const addNuclide = () => {
+    setNuclides([...nuclides, { isotope: '', quantity: '', unit: 'Bq' }]);
   };
 
-  const fetchEvolutionPlot = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await fetch('/api/evolution', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          isotope,
-          time_period: parseFloat(timePeriod),
-          time_unit: timeUnit
-        })
-      });
-      
-      if (!response.ok) throw new Error('Failed to generate evolution plot');
-      const data = await response.json();
-      setEvolutionImage(data.image);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  const removeNuclide = (index: number) => {
+    const newNuclides = nuclides.filter((_, i) => i !== index);
+    setNuclides(newNuclides);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await fetchDecayChain();
-    await fetchEvolutionPlot();
+  const updateNuclide = (index: number, field: string, value: string) => {
+    const updatedNuclides = nuclides.map((nuclide, i) => {
+      if (i === index) {
+        return { ...nuclide, [field]: value };
+      }
+      return nuclide;
+    });
+    setNuclides(updatedNuclides);
+  };
+
+  const resetForm = () => {
+    setNuclides([{ isotope: '', quantity: '', unit: 'Bq' }]);
+    setShowChain(false);
+    setShowEvolution(false);
+  };
+
+  const generateDecayChain = () => {
+    if (!nuclides[0].isotope) {
+      return;
+    }
+    setShowChain(true);
+  };
+
+  const generateEvolution = () => {
+    if (!nuclides.some(n => n.isotope && n.quantity)) {
+      return;
+    }
+    setShowEvolution(true);
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <Card className="w-full">
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <Card>
         <CardHeader>
           <CardTitle>Radioactive Decay Visualizer</CardTitle>
-          <CardDescription>
-            Explore decay chains and time evolution of radioactive isotopes
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <Input
-                  placeholder="Enter isotope (e.g., U-238, Th-232)"
-                  value={isotope}
-                  onChange={(e) => setIsotope(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div className="w-32">
-                <Input
-                  type="number"
-                  placeholder="Time"
-                  value={timePeriod}
-                  onChange={(e) => setTimePeriod(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div className="w-48">
-                <Select value={timeUnit} onValueChange={setTimeUnit}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select time unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {timeUnits.map((unit) => (
-                      <SelectItem key={unit.value} value={unit.value}>
-                        {unit.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button type="submit" disabled={loading}>
-                {loading ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing</>
-                ) : (
-                  'Visualize'
-                )}
+          <div className="space-y-4">
+            {/* Nuclide Input Section */}
+            <div className="space-y-4">
+              {nuclides.map((nuclide, index) => (
+                <div key={index} className="flex gap-4 items-start">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="Enter isotope (e.g., U-238)"
+                      value={nuclide.isotope}
+                      onChange={(e) => updateNuclide(index, 'isotope', e.target.value)}
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="Quantity"
+                      value={nuclide.quantity}
+                      onChange={(e) => updateNuclide(index, 'quantity', e.target.value)}
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <select
+                      value={nuclide.unit}
+                      onChange={(e) => updateNuclide(index, 'unit', e.target.value)}
+                      className="w-full p-2 border rounded"
+                    >
+                      {UNIT_OPTIONS.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {index > 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => removeNuclide(index)}
+                    >
+                      <MinusCircle className="h-5 w-5 text-red-500" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 flex-wrap">
+              <Button onClick={addNuclide} variant="outline" className="flex items-center gap-2">
+                <PlusCircle className="h-4 w-4" />
+                Add Nuclide
+              </Button>
+              <Button onClick={resetForm} variant="outline" className="flex items-center gap-2">
+                <RotateCcw className="h-4 w-4" />
+                Reset
+              </Button>
+              <Button onClick={generateDecayChain} variant="default">
+                Generate Decay Chain
+              </Button>
+              <Button onClick={generateEvolution} variant="secondary">
+                Show Decay Evolution
               </Button>
             </div>
-          </form>
 
-          {error && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertDescription>{error}</AlertDescription>
+            {/* Usage Tips */}
+            <Alert>
+              <AlertDescription>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>Enter isotopes in the format 'Element-Mass' (e.g., U-238, Th-232)</li>
+                  <li>For decay chain visualization, only the first isotope will be used</li>
+                  <li>For evolution graph, all specified isotopes will form an inventory</li>
+                  <li>You can mix different units when specifying quantities</li>
+                </ul>
+              </AlertDescription>
             </Alert>
-          )}
+          </div>
 
-          <Tabs defaultValue="chain" className="mt-6">
-            <TabsList>
-              <TabsTrigger value="chain">Decay Chain</TabsTrigger>
-              <TabsTrigger value="evolution">Time Evolution</TabsTrigger>
-            </TabsList>
-            <TabsContent value="chain" className="mt-4">
-              <Card>
-                <CardContent className="pt-6">
-                  {decayChainImage && (
-                    <img
-                      src={`data:image/png;base64,${decayChainImage}`}
-                      alt="Decay chain"
-                      className="mx-auto"
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="evolution" className="mt-4">
-              <Card>
-                <CardContent className="pt-6">
-                  {evolutionImage && (
-                    <img
-                      src={`data:image/png;base64,${evolutionImage}`}
-                      alt="Time evolution"
-                      className="mx-auto"
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          {/* Placeholder for visualization outputs */}
+          {(showChain || showEvolution) && (
+            <div className="mt-8 space-y-4">
+              {showChain && (
+                <div className="border rounded p-4">
+                  <h3 className="text-lg font-semibold mb-2">Decay Chain</h3>
+                  <div className="h-64 bg-gray-100 flex items-center justify-center">
+                    Decay chain visualization will appear here
+                  </div>
+                </div>
+              )}
+              
+              {showEvolution && (
+                <div className="border rounded p-4">
+                  <h3 className="text-lg font-semibold mb-2">Time Evolution</h3>
+                  <div className="h-64 bg-gray-100 flex items-center justify-center">
+                    Time evolution graph will appear here
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
   );
-}
+};
+
+export default DecayVisualizer;
