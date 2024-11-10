@@ -12,6 +12,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select";
 
 interface NuclideEntry {
   isotope: string;
@@ -42,6 +49,27 @@ interface NodeData {
   decay_modes?: string[];
   branching_fractions?: number[];
 }
+
+interface EvolutionData {
+    image: string;
+    plot_data: {
+      time: number[];
+      decay: Record<string, number[]>;
+    };
+    metadata: {
+      time_unit: string;
+      y_unit: string;
+      nuclides: string[];
+    };
+  }
+
+const TIME_UNIT_OPTIONS = [
+  { value: 's', label: 'Seconds' },
+  { value: 'm', label: 'Minutes' },
+  { value: 'h', label: 'Hours' },
+  { value: 'd', label: 'Days' },
+  { value: 'y', label: 'Years' }
+];
 
 const UNIT_OPTIONS = [
   { value: 'num', label: 'Number of atoms' },
@@ -92,6 +120,11 @@ const DecayVisualizer: React.FC = () => {
   const [hoveredNode, setHoveredNode] = useState<NodeData | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const [evolutionData, setEvolutionData] = useState<EvolutionData | null>(null);
+  const [timeUnit, setTimeUnit] = useState('d');
+  const [timeValue, setTimeValue] = useState('1000');
+  const [evolutionLoading, setEvolutionLoading] = useState(false);
+  const [evolutionError, setEvolutionError] = useState<string | null>(null);
 
   const addNuclide = () => {
     setNuclides([...nuclides, { isotope: '', quantity: '', unit: 'Bq' }]);
@@ -120,11 +153,85 @@ const DecayVisualizer: React.FC = () => {
     setError(null);
   };
 
-  const generateEvolution = () => {
-    if (!nuclides.some(n => n.isotope && n.quantity)) {
+  const generateEvolution = async () => {
+    const validNuclides = nuclides.filter(n => n.isotope && n.quantity);
+    if (!validNuclides.length) {
+      setEvolutionError("Please enter at least one nuclide with quantity");
       return;
     }
-    setShowEvolution(true);
+
+    try {
+      setEvolutionLoading(true);
+      setEvolutionError(null);
+      setShowEvolution(true);
+
+      const response = await fetch('http://localhost:8000/api/evolution', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nuclides: validNuclides,
+          time_period: parseFloat(timeValue),
+          time_unit: timeUnit,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to generate evolution plot');
+      }
+
+      setEvolutionData(data);
+    } catch (err) {
+      console.error('Error generating evolution plot:', err);
+      setEvolutionError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setEvolutionLoading(false);
+    }
+  };
+
+  const renderEvolutionControls = () => {
+    return (
+      <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+        <h4 className="font-medium mb-3">Time Evolution Settings</h4>
+        <div className="flex gap-4 items-end">
+          <div className="flex-1">
+            <label className="block text-sm font-medium mb-1">
+              Time Period
+            </label>
+            <input
+              type="text"
+              value={timeValue}
+              onChange={(e) => setTimeValue(e.target.value)}
+              className="w-full p-2 border rounded"
+              placeholder="Enter time period"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium mb-1">
+              Time Unit
+            </label>
+            <Select
+              value={timeUnit}
+              onValueChange={setTimeUnit}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TIME_UNIT_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -205,7 +312,46 @@ const DecayVisualizer: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+    const renderEvolutionControls = () => (
+        <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+          <h4 className="font-medium mb-3">Time Evolution Settings</h4>
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">
+                Time Period
+              </label>
+              <input
+                type="text"
+                value={timeValue}
+                onChange={(e) => setTimeValue(e.target.value)}
+                className="w-full p-2 border rounded"
+                placeholder="Enter time period"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">
+                Time Unit
+              </label>
+              <Select
+                value={timeUnit}
+                onValueChange={setTimeUnit}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIME_UNIT_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      );
+};
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -281,6 +427,9 @@ const DecayVisualizer: React.FC = () => {
               </Button>
             </div>
 
+            {/* Evolution Controls */}
+            {showEvolution && renderEvolutionControls()}
+
             {/* Usage Tips */}
             <Alert>
               <AlertDescription>
@@ -351,9 +500,35 @@ const DecayVisualizer: React.FC = () => {
               {showEvolution && (
                 <div className="border rounded-lg p-6">
                   <h3 className="text-lg font-semibold mb-4">Time Evolution</h3>
-                  <div className="h-64 bg-gray-100 flex items-center justify-center">
-                    Time evolution graph will appear here
-                  </div>
+                  {evolutionLoading ? (
+                    <div className="h-64 flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                    </div>
+                  ) : evolutionError ? (
+                    <Alert variant="destructive">
+                      <AlertDescription>{evolutionError}</AlertDescription>
+                    </Alert>
+                  ) : evolutionData ? (
+                    <div className="space-y-4">
+                      <img
+                        src={`data:image/png;base64,${evolutionData.image}`}
+                        alt="Decay evolution plot"
+                        className="max-w-full h-auto rounded-lg shadow-lg"
+                      />
+                      <div className="text-sm text-gray-600">
+                        <p className="font-medium">Nuclides in evolution:</p>
+                        <ul className="list-disc pl-4 mt-1">
+                          {evolutionData.metadata.nuclides.map((nuclide) => (
+                            <li key={nuclide}>{nuclide}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-64 bg-gray-100 flex items-center justify-center">
+                      Configure time settings and click Generate to view evolution
+                    </div>
+                  )}
                 </div>
               )}
             </div>

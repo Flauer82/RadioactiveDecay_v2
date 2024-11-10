@@ -3,43 +3,109 @@ from radioactivedecay import Inventory
 import matplotlib.pyplot as plt
 import io
 import base64
+import logging
+from typing import List, Dict, Any
+
+logger = logging.getLogger(__name__)
 
 class TimeEvolutionService:
-    def generate_evolution_plot(
-        self, 
-        isotope: str, 
-        time_period: float,
-        time_unit: str
-    ) -> str:
-        """Generate time evolution plot"""
+    def __init__(self):
+        self.default_time_period = 1000  # days
+        self.default_time_unit = 'd'
+
+    def create_inventory(self, nuclides: List[Dict[str, str]]) -> Inventory:
+        """Create an inventory from list of nuclide entries"""
         try:
-            # Create inventory with 1.0 Bq of isotope
-            inv = Inventory({isotope: 1.0})
+            # Convert list of nuclides into inventory format
+            inventory_dict = {
+                entry['isotope']: float(entry['quantity'])
+                for entry in nuclides
+                if entry['isotope'] and entry['quantity']
+            }
             
-            # Create figure with larger size
+            # Get the unit from the first valid entry
+            unit = next((entry['unit'] for entry in nuclides 
+                        if entry['isotope'] and entry['quantity']), 'Bq')
+            
+            # Create and return inventory
+            return Inventory(inventory_dict, unit)
+            
+        except Exception as e:
+            logger.error(f"Error creating inventory: {str(e)}")
+            raise ValueError(f"Failed to create inventory: {str(e)}")
+
+    def generate_evolution_plot(
+        self,
+        nuclides: List[Dict[str, str]],
+        time_period: float = None,
+        time_unit: str = None,
+        y_unit: str = None
+    ) -> Dict[str, Any]:
+        """Generate time evolution plot with enhanced features"""
+        try:
+            # Use defaults if not specified
+            time_period = time_period or self.default_time_period
+            time_unit = time_unit or self.default_time_unit
+            y_unit = y_unit or 'Bq'
+            
+            # Create inventory from nuclides
+            inv = self.create_inventory(nuclides)
+            
+            # Create figure with larger size for better readability
             plt.figure(figsize=(12, 6))
             
-            # Generate plot
+            # Generate plot with specified parameters
             fig, ax = inv.plot(
                 xmax=time_period,
                 xunits=time_unit,
                 xscale='log',
                 yscale='log',
-                yunits='Bq'
+                yunits=y_unit,
+                xmin=time_period/1000,  # Start at 0.1% of max time
+                ymin=1e-6,  # Show up to 6 orders of magnitude down
             )
             
             # Enhance plot appearance
             plt.grid(True, which="both", ls="-", alpha=0.2)
-            plt.title(f"Decay Evolution of {isotope}")
+            plt.title(f"Radioactive Decay Evolution")
             
-            # Save to buffer
+            # Add informative labels
+            plt.xlabel(f"Time ({time_unit})")
+            plt.ylabel(f"Activity ({y_unit})")
+            
+            # Get the data for interactive features
+            time_data, decay_data = inv.decay_time_series(
+                time_period=time_period,
+                time_units=time_unit,
+                decay_units=y_unit,
+                time_scale='log'
+            )
+            
+            # Save plot to buffer
             buffer = io.BytesIO()
             fig.savefig(buffer, format='png', bbox_inches='tight', dpi=300)
-            plt.close(fig)
+            plt.close('all')
+            buffer.seek(0)
             
             # Convert to base64
             image_base64 = base64.b64encode(buffer.getvalue()).decode()
             
-            return image_base64
+            # Prepare response with plot and data
+            return {
+                'image': image_base64,
+                'plot_data': {
+                    'time': time_data,
+                    'decay': decay_data
+                },
+                'metadata': {
+                    'time_unit': time_unit,
+                    'y_unit': y_unit,
+                    'nuclides': list(decay_data.keys())
+                }
+            }
+            
         except Exception as e:
+            logger.error(f"Error generating evolution plot: {str(e)}")
             raise ValueError(f"Failed to generate evolution plot: {str(e)}")
+        finally:
+            plt.close('all')  # Ensure all figures are closed
