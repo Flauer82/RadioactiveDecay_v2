@@ -5,7 +5,7 @@
 <!-- Replace this comment with your banner image -->
 <!-- Recommended: Create a banner (1200x300) using Canva or Adobe Express -->
 <!-- Example: ![Radioactive Decay Banner](frontend/public/banner.png) -->
-[Radioactive Decay Banner](frontend/public/assets/banner.png)
+![Radioactive Decay Banner](frontend/public/banner.png)
 
 > An interactive web application for visualizing and understanding radioactive decay chains through elegant visualization and real-time calculations.
 
