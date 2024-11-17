@@ -1,135 +1,195 @@
-# Radioactive Decay Chain Visualizer
+# 🔬 Radioactive Decay Chain Visualizer
 
-A modern web application for visualizing radioactive decay chains and their time evolution, built with Next.js and Python. This tool helps scientists, students, and nuclear professionals understand and analyze radioactive decay processes through interactive visualizations.
+<div align="center">
 
-## Architecture
+<!-- Replace this comment with your banner image -->
+<!-- Recommended: Create a banner (1200x300) using Canva or Adobe Express -->
+<!-- Example: ![Radioactive Decay Banner](frontend/public/banner.png) -->
+[Radioactive Decay Banner](frontend/public/assets/banner.png)
 
-- **Frontend**: Next.js React application
-- **Backend**: Python API using FastAPI
-- **Core Engine**: `radioactivedecay` Python library for calculations
+> An interactive web application for visualizing and understanding radioactive decay chains through elegant visualization and real-time calculations.
 
-## Features
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Next.js](https://img.shields.io/badge/next.js-13+-000000.svg)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.68+-009688.svg)](https://fastapi.tiangolo.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6.svg)](https://www.typescriptlang.org/)
 
-- **Interactive Decay Chain Visualization**
-  - Input any isotope using standard notation (e.g., U-238, Th-232)
-  - Real-time visual representations of decay chains
-  - Clear display of branching ratios and decay modes
-  - Interactive hover effects for detailed information
-  - Half-life information for each isotope
+[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
-- **Time Evolution Analysis**
-  - Dynamic plots showing relative amounts of isotopes over time
-  - Interactive logarithmic scale visualization
-  - Complete decay chain evolution tracking
-  - Real-time daughter product monitoring
+</div>
 
-- **Modern User Interface**
-  - Clean, responsive design
-  - Dark/light mode support
-  - Mobile-friendly layout
-  - Intuitive isotope input system
-  - Interactive tooltips and help system
+## 📋 Table of Contents
 
-## Tech Stack
+- [Project Overview](#-project-overview)
+- [Features](#-features)
+- [Project Structure](#-project-structure)
+- [Quick Start](#-quick-start)
+- [Development Setup](#-development-setup)
+- [API Documentation](#-api-documentation)
+- [Contributing](#-contributing)
+- [License](#-license)
 
-### Frontend
-- Next.js 13+
-- React
-- Tailwind CSS for styling
-- shadcn/ui components
-- Recharts for data visualization
+## 🎯 Project Overview
 
-### Backend
+The Radioactive Decay Chain Visualizer is designed to:
+- Provide intuitive visualization of radioactive decay chains
+- Calculate and display time evolution of isotope quantities
+- Support educational and research needs in nuclear physics
+- Offer a modern, responsive user interface
+- Enable easy sharing and export of results
+
+### Design Philosophy
+- **Clean Architecture** 🏗️
+  - Separation of concerns between frontend and backend
+  - Clear dependency boundaries
+  - Testable and maintainable code structure
+
+- **User-Centric Design** 👥
+  - Intuitive interface for both beginners and experts
+  - Real-time feedback and interactions
+  - Comprehensive help system
+  - Accessibility considerations
+
+- **Performance** ⚡
+  - Optimized calculations on the backend
+  - Efficient data transfer between layers
+  - Client-side caching where appropriate
+
+## 🌟 Features
+
+### Core Capabilities
+- 📊 Interactive decay chain visualization
+- 📈 Time evolution plotting
+- 🔍 Detailed isotope information
+- 💾 Data export functionality
+- 🎨 Customizable visualizations
+
+### Technical Features
+- 🚀 Real-time calculations using Python's radioactivedecay library
+- 🔄 WebSocket support for live updates
+- 📱 Responsive design with Tailwind CSS
+- 🌙 Dark/light mode theme support
+- 🔌 RESTful API endpoints with FastAPI
+
+## 📁 Project Structure
+
+```
+RadioactiveDecay_v2/
+├── 📂 frontend/                # Next.js frontend application
+│   ├── 📂 src/                # Source code
+│   │   ├── 📂 app/           # Next.js 13+ app directory
+│   │   ├── 📂 components/    # Reusable UI components
+│   │   └── 📂 lib/          # Utility functions and hooks
+│   ├── 📂 public/            # Static assets
+│   └── 📄 package.json       # Frontend dependencies
+│
+├── 📂 backend/                # FastAPI backend application
+│   ├── 📂 app/               # Main application code
+│   │   ├── 📂 api/          # API routes and handlers
+│   │   ├── 📂 core/         # Business logic
+│   │   └── 📂 models/       # Data models and schemas
+│   ├── 📂 rad_decay/         # Decay calculation module
+│   └── 📂 tests/             # Backend tests
+│
+└── 📄 README.md              # Project documentation
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+
 - Python 3.8+
-- FastAPI
-- `radioactivedecay` library
-- NumPy for calculations
-- Matplotlib for graph generation
+- Node.js 16+
+- npm or yarn
+- Git
 
-## Example Isotopes
+### Installation
 
-Analyze various decay chains, including:
-- U-238 (Uranium series)
-- Th-232 (Thorium series)
-- Ra-226 (Radium decay)
-- Rn-222 (Radon decay chain)
-- Mo-99 (Medical isotope)
-
-## Installation
-
-### Backend Setup
+1. Clone the repository:
 ```bash
-# Create and activate virtual environment
+git clone https://github.com/yourusername/RadioactiveDecay_v2.git
+cd RadioactiveDecay_v2
+```
+
+2. Set up the backend:
+```bash
+cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
-
-# Start the backend server
-uvicorn main:app --reload
 ```
 
-### Frontend Setup
+3. Set up the frontend:
 ```bash
-# Navigate to frontend directory
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start development server
-npm run dev
 ```
 
-## Development
+4. Create necessary environment files:
 
-### Backend Development
-- API endpoints are in `main.py`
-- Core decay calculations in `/utils`
-- Tests in `/tests`
-
-### Frontend Development
-- Components in `/components`
-- Pages in `/app`
-- Styles in `/styles`
-- API utilities in `/lib`
-
-## API Endpoints
-
-- `POST /api/decay-chain`: Generate decay chain visualization
-- `POST /api/evolution`: Calculate and return time evolution data
-- `GET /api/isotopes`: Get list of available isotopes
-
-## Output Information
-
-The visualization includes:
-
-- **Decay Chain Graph**
-  - Interactive parent-daughter relationships
-  - Color-coded decay modes (α, β-, β+, EC, IT)
-  - Percentage display of branching ratios
-  - Formatted half-lives with appropriate units
-
-- **Evolution Plot**
-  - Interactive time evolution graph
-  - Logarithmic scale representation
-  - Multi-isotope tracking
-  - Customizable time ranges
-
-## Environment Variables
-
+Frontend (.env.local):
 ```env
-# Backend
-PORT=8000
-DEBUG=True
-CORS_ORIGINS=["http://localhost:3000"]
-
-# Frontend
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-## Contributing
+Backend (.env):
+```env
+DEBUG=True
+CORS_ORIGINS=http://localhost:3000
+```
+
+## 🛠️ Development Setup
+
+### Running the Development Environment
+
+1. Start the backend server:
+```bash
+cd backend
+uvicorn app.main:app --reload --port 8000
+```
+
+2. Start the frontend development server:
+```bash
+cd frontend
+npm run dev
+```
+
+3. Access the application:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Documentation: http://localhost:8000/docs
+
+### Development Tools
+
+- **VS Code Extensions**:
+  - Python
+  - Pylance
+  - ESLint
+  - Prettier
+  - Tailwind CSS IntelliSense
+
+- **Browser Extensions**:
+  - React Developer Tools
+  - Redux DevTools
+
+## 📚 API Documentation
+
+Our API is fully documented using OpenAPI (Swagger) specifications. Access the interactive documentation at:
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+### Key API Endpoints
+
+- `POST /api/decay-chain`: Calculate decay chain for given isotope
+- `GET /api/isotopes`: List available isotopes
+- `POST /api/calculate`: Perform time evolution calculations
+- `GET /api/export/{format}`: Export results in various formats
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -137,16 +197,26 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## License
+### Development Guidelines
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+- Follow PEP 8 style guide for Python code
+- Use TypeScript for all JavaScript code
+- Write tests for new features
+- Update documentation as needed
 
-## Acknowledgments
+## 📄 License
 
-- `radioactivedecay` library maintainers
-- Nuclear data from ICRP-107 dataset
-- Open-source community for various tools and libraries used
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Current Status
+## 🙏 Acknowledgments
 
-This project is under active development. Check the Issues tab for planned features and known bugs.
+- [radioactivedecay](https://github.com/radioactivedecay/radioactivedecay) library for decay calculations
+- [Next.js](https://nextjs.org/) for the frontend framework
+- [FastAPI](https://fastapi.tiangolo.com/) for the backend framework
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+
+---
+
+<div align="center">
+Made with ❤️ by the Radioactive Decay Team
+</div>

@@ -132,3 +132,6 @@ rad_decay/
 # System Files
 .directory
 .nfs*
+
+#other
+images/
