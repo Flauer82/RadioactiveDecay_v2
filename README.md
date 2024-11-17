@@ -108,7 +108,7 @@ RadioactiveDecay_v2/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/RadioactiveDecay_v2.git
+git clone https://github.com/Flauer82/RadioactiveDecay_v2.git
 cd RadioactiveDecay_v2
 ```
 
@@ -218,5 +218,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-Made with ❤️ by the Radioactive Decay Team
+Made with ❤️ by Flauer82 
 </div>
