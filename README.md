@@ -231,5 +231,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-Made with ❤️ by Flauer82 
+Made with ❤️ by Flauer82 with the invaluable help of [Windsurf by Codeium](https://codeium.com/windsurf)
 </div>
