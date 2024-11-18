@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.services.decay_chain import DecayChainService  # Updated import path
 from app.services.evolution import TimeEvolutionService
-from typing import List, Dict
+from typing import List, Dict, Literal
 
 app = FastAPI()
 
@@ -16,6 +16,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Available units
+Y_AXIS_UNITS = Literal[
+    # Activity units
+    "Bq", "kBq", "MBq", "GBq", "Ci", "mCi", "µCi",
+    # Mass and amount units
+    "g", "mol", "num",
+    # Fraction units
+    "activity_frac", "mass_frac", "mol_frac"
+]
+TIME_UNITS = Literal["s", "m", "h", "d", "y"]
 
 # Dependency injection functions
 def get_decay_chain_service() -> DecayChainService:
@@ -36,7 +47,8 @@ class NuclideEntry(BaseModel):
 class EvolutionRequest(BaseModel):
     nuclides: List[NuclideEntry]
     time_period: float
-    time_unit: str
+    time_unit: TIME_UNITS
+    y_unit: Y_AXIS_UNITS = "Bq"  # Default to Becquerel
 
 # Endpoints
 @app.post("/api/decay-chain")
@@ -55,23 +67,31 @@ async def generate_evolution(
     evolution_service: TimeEvolutionService = Depends(get_evolution_service)
 ):
     try:
-        # Convert request to format expected by service
-        nuclides = [
-            {
-                "isotope": entry.isotope,
-                "quantity": entry.quantity,
-                "unit": entry.unit
-            }
-            for entry in request.nuclides
-        ]
+        # Convert nuclides to the format expected by the service
+        nuclides = [{"isotope": n.isotope, "quantity": n.quantity, "unit": n.unit} 
+                   for n in request.nuclides]
         
         return evolution_service.generate_evolution_plot(
             nuclides=nuclides,
             time_period=request.time_period,
-            time_unit=request.time_unit
+            time_unit=request.time_unit,
+            y_unit=request.y_unit
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/units")
+async def get_available_units():
+    """Get available units for time and y-axis"""
+    return {
+        "y_axis_units": {
+            "activity": ["Bq", "kBq", "MBq", "GBq", "Ci", "mCi", "µCi"],
+            "mass": ["g"],
+            "amount": ["mol", "num"],
+            "fraction": ["activity_frac", "mass_frac", "mol_frac"]
+        },
+        "time_units": ["s", "m", "h", "d", "y"]
+    }
 
 if __name__ == "__main__":
     import uvicorn
