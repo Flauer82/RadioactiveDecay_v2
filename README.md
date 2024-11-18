@@ -34,7 +34,7 @@
 
 The Radioactive Decay Chain Visualizer is designed to:
 - Provide intuitive visualization of radioactive decay chains
-- Calculate and display time evolution of isotope quantities
+- Calculate and display time evolution of isotope quantities with flexible unit options
 - Support educational and research needs in nuclear physics
 - Offer a modern, responsive user interface
 - Enable easy sharing and export of results
@@ -49,23 +49,36 @@ The Radioactive Decay Chain Visualizer is designed to:
   - Intuitive interface for both beginners and experts
   - Real-time feedback and interactions
   - Comprehensive help system
-  - Accessibility considerations
+  - Flexible visualization options
 
-- **Performance** ⚡
-  - Optimized calculations on the backend
-  - Efficient data transfer between layers
-  - Client-side caching where appropriate
+## ✨ Features
 
-## 🌟 Features
+### Core Features
+1. **Decay Chain Visualization** 🔄
+   - Interactive decay chain diagrams
+   - Hover tooltips with detailed isotope information
+   - Clear visualization of branching fractions
 
-### Core Capabilities
-- 📊 Interactive decay chain visualization
-- 📈 Time evolution plotting
-- 🔍 Detailed isotope information
-- 💾 Data export functionality
-- 🎨 Customizable visualizations
+2. **Time Evolution Analysis** 📈
+   - Dynamic evolution plots
+   - Multiple unit options for y-axis:
+     - Activity units (Bq, kBq, MBq, GBq, Ci, mCi, µCi)
+     - Mass units (g)
+     - Amount units (mol, number of atoms)
+     - Fraction units (activity, mass, and mole fractions)
+   - Configurable time periods and units
+   - Real-time plot updates
+
+3. **Data Management** 📊
+   - Support for multiple nuclides
+   - Flexible unit conversions
+   - Interactive data display
 
 ### Technical Features
+- **Modern Tech Stack** 💻
+  - Next.js 13+ with TypeScript
+  - FastAPI backend
+  - Real-time calculations using radioactivedecay library
 - 🚀 Real-time calculations using Python's radioactivedecay library
 - 🔄 WebSocket support for live updates
 - 📱 Responsive design with Tailwind CSS
