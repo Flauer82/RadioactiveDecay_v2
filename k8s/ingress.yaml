@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: radioactive-decay-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /rad_decay(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: radioactive-decay-frontend
+            port:
+              number: 80
+      - path: /rad_decay/api(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: radioactive-decay-backend
+            port:
+              number: 8000

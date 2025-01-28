@@ -6,7 +6,8 @@ from app.services.decay_chain import DecayChainService  # Updated import path
 from app.services.evolution import TimeEvolutionService
 from typing import List, Dict, Literal
 
-app = FastAPI()
+# Configure the app with a prefix
+app = FastAPI(root_path="/rad_decay/api")
 
 # Configure CORS
 app.add_middleware(
@@ -51,7 +52,7 @@ class EvolutionRequest(BaseModel):
     y_unit: Y_AXIS_UNITS = "Bq"  # Default to Becquerel
 
 # Endpoints
-@app.post("/api/decay-chain")
+@app.post("/decay-chain")
 async def generate_decay_chain(
     request: DecayChainRequest,
     chain_service: DecayChainService = Depends(get_decay_chain_service)
@@ -61,7 +62,7 @@ async def generate_decay_chain(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/api/evolution")
+@app.post("/evolution")
 async def generate_evolution(
     request: EvolutionRequest,
     evolution_service: TimeEvolutionService = Depends(get_evolution_service)
@@ -80,7 +81,7 @@ async def generate_evolution(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/api/units")
+@app.get("/units")
 async def get_available_units():
     """Get available units for time and y-axis"""
     return {
@@ -92,6 +93,11 @@ async def get_available_units():
         },
         "time_units": ["s", "m", "h", "d", "y"]
     }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn

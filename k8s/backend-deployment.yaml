@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: radioactive-decay-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: radioactive-decay-backend
+  template:
+    metadata:
+      labels:
+        app: radioactive-decay-backend
+    spec:
+      imagePullSecrets:
+      - name: ghcr-secret
+      containers:
+      - name: backend
+        image: ghcr.io/flauer82/radioactive-decay-backend:latest
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: radioactive-decay-backend
+spec:
+  selector:
+    app: radioactive-decay-backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: ClusterIP

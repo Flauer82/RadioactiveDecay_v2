@@ -184,7 +184,7 @@ const DecayVisualizer: React.FC = () => {
       setEvolutionError(null);
       setShowEvolution(true);
 
-      const response = await fetch('http://localhost:8000/api/evolution', {
+      const response = await fetch('/rad_decay/api/evolution', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -312,14 +312,15 @@ const DecayVisualizer: React.FC = () => {
       const y = (e.clientY - rect.top) / rect.height * chainData.metadata.height;
   
       // Find the closest node
-      const node = chainData.nodes[Object.keys(chainData.nodes).find(key => {
-        const pos = chainData.nodes[key].position;
+      const nodeKey = Object.keys(chainData?.nodes || {}).find(key => {
+        const pos = chainData?.nodes?.[key]?.position;
         if (!pos) return false;
         
         const dx = pos.x - x;
         const dy = pos.y - y;
         return Math.sqrt(dx * dx + dy * dy) < 30;
-      })];
+      });
+      const node = nodeKey ? chainData?.nodes?.[nodeKey] : undefined;
   
       if (node?.data) {
         setHoveredNode(node.data);
@@ -344,7 +345,7 @@ const DecayVisualizer: React.FC = () => {
       setError(null);
       setShowChain(true);
   
-      const response = await fetch('http://localhost:8000/api/decay-chain', {
+      const response = await fetch('/rad_decay/api/decay-chain', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
